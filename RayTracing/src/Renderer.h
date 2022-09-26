@@ -5,6 +5,7 @@
 
 #include "Camera.h"
 #include "Ray.h"
+#include "Scene.h"
 
 #include <memory>
 #include "Walnut/Random.h"
@@ -20,13 +21,13 @@ public:
 	Renderer() = default;
 
 	void OnResize(uint32_t width, uint32_t height);
-	void Render(const Camera& camera);
+	void Render(const Scene& scene, const Camera& camera);
 
 	std::shared_ptr<Walnut::Image> GetFinalImage() const { return m_FinalImage; }
 
 	void lightDirUpdated();
 private:
-	glm::vec4 TraceRay(const Ray& ray);
+	glm::vec4 TraceRay(const Scene& scene, const Ray& ray);
 
 private:
 	std::shared_ptr<Walnut::Image> m_FinalImage;
@@ -34,9 +35,6 @@ private:
 	glm::vec3 lightDir = glm::normalize(lightDirProxy);
 
 public:
-	glm::vec3 SphereOrigin = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 lightDirProxy = glm::vec3(-1, -1, 1);
-
 	bool doShading = true;
-	float radius = 0.5f;
 };
