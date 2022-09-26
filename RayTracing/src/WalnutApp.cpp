@@ -80,6 +80,19 @@ public:
 		}
 
 		ImGui::Checkbox("Do shading", &m_Renderer.doShading);
+		ImGui::Separator();
+		ImGui::Text("Add Sphere");
+		if (ImGui::Button("Add to Scene"))
+		{
+			Sphere newSphere;
+			newSphere.Position = m_newSpherePosition;
+			newSphere.Radius = m_newSphereRadius;
+			newSphere.Albedo = m_newSphereAlbedo;
+			m_Scene.Spheres.push_back(newSphere);
+		}
+		ImGui::DragFloat3("Position", glm::value_ptr(m_newSpherePosition), 0.1f);
+		ImGui::DragFloat("Radius", &m_newSphereRadius, 0.1f);
+		ImGui::ColorEdit3("Albedo", glm::value_ptr(m_newSphereAlbedo), 0.1f);
 		ImGui::End();
 
 
@@ -122,6 +135,10 @@ private:
 	Scene m_Scene;
 	uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 	uint32_t pm_ViewportWidth = -1, pm_ViewportHeight = -1;
+
+	glm::vec3 m_newSpherePosition = glm::vec3(0.0f);
+	glm::vec3 m_newSphereAlbedo = glm::vec3(0.0f);
+	float m_newSphereRadius = 0.0f;
 
 	float m_LastRenderTime = 0.0f;
 };
