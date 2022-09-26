@@ -11,8 +11,36 @@ namespace Utils {
 		uint32_t result = (a << 24) | (b << 16) | (g << 8) | r;
 		return result;
 	}
+	
+	static float Q_rsqrt(const float& number)
+	{
+		long i;
+		float x2, y;
+		const float threehalfs = 1.5f;
+
+		x2 = number * 0.5f;
+		y = number;
+		i = *(long*)&y;
+		i = 0x5f3759df - (i >> 1);
+		y = *(float*)&i;
+		//y = y * (threehalfs - (x2 * y * y));
+		//y = y * (threehalfs - (x2 * y * y)); // Optional second newton iteration
+
+		return y;
+	}
+
+
+	glm::vec3 Fast_normalize(const glm::vec3& v)
+	{
+		return v * Q_rsqrt(glm::dot(v, v));
+	}
 }
 
+
+void Renderer::lightDirUpdated()
+{
+	lightDir = glm::normalize(lightDirProxy);
+}
 
 void Renderer::OnResize(uint32_t width, uint32_t height)
 {
@@ -33,7 +61,7 @@ void Renderer::OnResize(uint32_t width, uint32_t height)
 
 void Renderer::Render()
 {
-	lightDir = glm::normalize(lightDirProxy);
+	
 	float aspectRatio = m_FinalImage->GetWidth() / (float)m_FinalImage->GetHeight();
 
 	for (uint32_t y = 0; y < m_FinalImage->GetHeight(); y++)
@@ -59,6 +87,7 @@ glm::vec4 Renderer::PerPixel(glm::vec2 coord)
 	glm::vec3 rayDirection(coord.x, coord.y, -1.0f);
 	glm::vec3 rayOrigin(0.0f, 0.0f, 2.0f);
 	//rayDirection = glm::normalize(rayDirection);
+	//rayDirection = Utils::Fast_normalize(rayDirection);
 
 	// (bx^2 + by^2)t^2 + (2(axbx + ayby))t + (ax^2 + ay^2 - r^2) = 0
 
@@ -96,12 +125,14 @@ glm::vec4 Renderer::PerPixel(glm::vec2 coord)
 	
 	//glm::vec3 h0 = rayOrigin + rayDirection * t0;
 	glm::vec3 hitPoint = rayOrigin + rayDirection * closestT;
+	glm::vec3 colour = glm::vec3(glm::normalize(hitPoint) * 0.5f + 0.5f);
 
-	//return glm::vec4(hitPoint, 1.0f);
-
-	float lightLevel = (glm::dot(glm::normalize(hitPoint - SphereOrigin), -lightDir) + 1.0f) / 2.0f;
+	float lightLevel = glm::max(glm::dot(glm::normalize(hitPoint - SphereOrigin), -lightDir), 0.0f);
+	//float lightLevel = (glm::dot(Utils::Fast_normalize(hitPoint - SphereOrigin), -lightDir) + 1.0f) / 2.0f;
 	
-	return glm::vec4(lightLevel, lightLevel, lightLevel, 1);
+	//return glm::vec4(lightLevel, lightLevel, lightLevel, 1);
+
+	return glm::vec4(colour * lightLevel, 1.0f);
 	
 
 	

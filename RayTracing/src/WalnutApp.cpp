@@ -19,14 +19,18 @@ public:
 		ImGui::Text("Current FPS: %.3ffps", 1000.0f / m_LastRenderTime);
 		ImGui::SliderFloat3("Sphere Origin", &m_Renderer.SphereOrigin.x, -1.0f, 1.0f);
 		ImGui::SliderFloat("Sphere Radius", &m_Renderer.radius, 0.0f, 2.0f);
-		ImGui::SliderFloat3("Light Direction", &m_Renderer.lightDirProxy.x, -1.0f, 1.0f);
+		if (ImGui::SliderFloat3("Light Direction", &m_Renderer.lightDirProxy.x, -1.0f, 1.0f))
+		{
+			m_Renderer.lightDirUpdated();
+		}
 		ImGui::Checkbox("Do shading", &m_Renderer.doShading);
 		ImGui::End();
 
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::Begin("Viewport");
-
+		pm_ViewportWidth = m_ViewportWidth;
+		pm_ViewportHeight = m_ViewportHeight;
 		m_ViewportWidth = ImGui::GetContentRegionAvail().x;
 		m_ViewportHeight = ImGui::GetContentRegionAvail().y;
 
@@ -45,7 +49,12 @@ public:
 	{
 		Timer timer;
 
-		m_Renderer.OnResize(m_ViewportWidth, m_ViewportHeight);
+		if (pm_ViewportHeight != m_ViewportHeight || pm_ViewportWidth != m_ViewportWidth)
+		{
+			m_Renderer.OnResize(m_ViewportWidth, m_ViewportHeight);
+		}
+		
+		
 		m_Renderer.Render();
 
 		m_LastRenderTime = timer.ElapsedMillis();
@@ -53,6 +62,7 @@ public:
 private:
 	Renderer m_Renderer;
 	uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
+	uint32_t pm_ViewportWidth = -1, pm_ViewportHeight = -1;
 
 	float m_LastRenderTime = 0.0f;
 };

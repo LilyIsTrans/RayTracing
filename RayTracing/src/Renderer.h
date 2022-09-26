@@ -20,6 +20,8 @@ public:
 	void Render();
 
 	std::shared_ptr<Walnut::Image> GetFinalImage() const { return m_FinalImage; }
+
+	void lightDirUpdated();
 private:
 	glm::vec4 PerPixel(glm::vec2 coord);
 
