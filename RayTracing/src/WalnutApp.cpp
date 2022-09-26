@@ -5,6 +5,7 @@
 #include "Walnut/Timer.h"
 
 #include "Renderer.h"
+#include "Camera.h";
 
 using namespace Walnut;
 
@@ -12,6 +13,15 @@ using namespace Walnut;
 class ExampleLayer : public Walnut::Layer
 {
 public:
+	ExampleLayer()
+		: m_Camera(45.0f, 0.1f, 100.0f) {}
+
+	virtual void OnUpdate(float ts) override
+	{
+		m_Camera.OnUpdate(ts);
+	}
+
+
 	virtual void OnUIRender() override
 	{
 		ImGui::Begin("Settings");
@@ -52,15 +62,17 @@ public:
 		if (pm_ViewportHeight != m_ViewportHeight || pm_ViewportWidth != m_ViewportWidth)
 		{
 			m_Renderer.OnResize(m_ViewportWidth, m_ViewportHeight);
+			m_Camera.OnResize(m_ViewportWidth, m_ViewportHeight);
 		}
 		
 		
-		m_Renderer.Render();
+		m_Renderer.Render(m_Camera);
 
 		m_LastRenderTime = timer.ElapsedMillis();
 	}
 private:
 	Renderer m_Renderer;
+	Camera m_Camera;
 	uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 	uint32_t pm_ViewportWidth = -1, pm_ViewportHeight = -1;
 
