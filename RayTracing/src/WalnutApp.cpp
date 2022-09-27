@@ -120,8 +120,8 @@ public:
 
 		if (pm_ViewportHeight != m_ViewportHeight || pm_ViewportWidth != m_ViewportWidth)
 		{
-			m_Renderer.OnResize(m_ViewportWidth, m_ViewportHeight);
-			m_Camera.OnResize(m_ViewportWidth, m_ViewportHeight);
+			m_Renderer.OnResize(m_ViewportWidth, m_ViewportHeight, m_SSAALevel);
+			m_Camera.OnResize(m_ViewportWidth, m_ViewportHeight, m_SSAALevel);
 		}
 		
 		
@@ -133,7 +133,7 @@ private:
 	Renderer m_Renderer;
 	Camera m_Camera;
 	Scene m_Scene;
-	uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
+	uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0, m_SSAALevel = 1;
 	uint32_t pm_ViewportWidth = -1, pm_ViewportHeight = -1;
 
 	glm::vec3 m_newSpherePosition = glm::vec3(0.0f);

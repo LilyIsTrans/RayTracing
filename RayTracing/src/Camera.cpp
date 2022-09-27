@@ -88,13 +88,14 @@ void Camera::OnUpdate(float ts)
 	}
 }
 
-void Camera::OnResize(uint32_t width, uint32_t height)
+void Camera::OnResize(uint32_t width, uint32_t height, uint32_t SSAALevel)
 {
 	if (width == m_ViewportWidth && height == m_ViewportHeight)
 		return;
 
 	m_ViewportWidth = width;
 	m_ViewportHeight = height;
+	m_SSAALevel = SSAALevel;
 
 	RecalculateProjection();
 	RecalculateRayDirections();
@@ -119,18 +120,18 @@ void Camera::RecalculateView()
 
 void Camera::RecalculateRayDirections()
 {
-	m_RayDirections.resize(m_ViewportWidth * m_ViewportHeight);
+	m_RayDirections.resize(m_ViewportWidth * m_ViewportHeight * m_SSAALevel * m_SSAALevel);
 
-	for (uint32_t y = 0; y < m_ViewportHeight; y++)
+	for (uint32_t y = 0; y < m_ViewportHeight * m_SSAALevel; y++)
 	{
-		for (uint32_t x = 0; x < m_ViewportWidth; x++)
+		for (uint32_t x = 0; x < m_ViewportWidth * m_SSAALevel; x++)
 		{
-			glm::vec2 coord = { (float)x / (float)m_ViewportWidth, (float)y / (float)m_ViewportHeight };
+			glm::vec2 coord = { (float)x / (float)(m_ViewportWidth * m_SSAALevel), (float)y / (float)(m_ViewportHeight * m_SSAALevel)};
 			coord = coord * 2.0f - 1.0f; // -1 -> 1
 
 			glm::vec4 target = m_InverseProjection * glm::vec4(coord.x, coord.y, 1, 1);
 			glm::vec3 rayDirection = glm::vec3(m_InverseView * glm::vec4(glm::normalize(glm::vec3(target) / target.w), 0)); // World space
-			m_RayDirections[x + y * m_ViewportWidth] = rayDirection;
+			m_RayDirections[x + y * m_ViewportWidth * m_SSAALevel] = rayDirection;
 		}
 	}
 }

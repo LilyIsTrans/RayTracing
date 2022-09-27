@@ -42,7 +42,7 @@ void Renderer::lightDirUpdated()
 	lightDir = glm::normalize(lightDirProxy);
 }
 
-void Renderer::OnResize(uint32_t width, uint32_t height)
+void Renderer::OnResize(uint32_t width, uint32_t height, uint32_t SSAALevel)
 {
 	if (m_FinalImage)
 	{
@@ -56,7 +56,9 @@ void Renderer::OnResize(uint32_t width, uint32_t height)
 	}
 
 	delete[] m_ImageData;
+	delete[] m_ImageDataSSAABuffer;
 	m_ImageData = new uint32_t[width * height];
+	m_ImageDataSSAABuffer = new glm::vec4[width * height * SSAALevel * SSAALevel];
 }
 
 void Renderer::Render(const Scene& scene, const Camera& camera)
@@ -67,16 +69,35 @@ void Renderer::Render(const Scene& scene, const Camera& camera)
 	
 	
 	Ray ray;
-	ray.Origin = camera.GetPosition();;
+	ray.Origin = camera.GetPosition();
+
+
+	for (uint32_t y = 0; y < m_FinalImage->GetHeight() * camera.GetSSAALevel(); y++)
+	{
+		for (uint32_t x = 0; x < m_FinalImage->GetWidth() * camera.GetSSAALevel(); x++)
+		{
+			ray.Direction = camera.GetRayDirections()[x + y * m_FinalImage->GetWidth() * camera.GetSSAALevel()];
+			glm::vec4 colour = TraceRay(scene, ray);
+			colour = glm::clamp(colour, glm::vec4(0.0f), glm::vec4(1.0f));
+			m_ImageDataSSAABuffer[x + y * m_FinalImage->GetWidth() * camera.GetSSAALevel()] = colour;
+		}
+	}
 
 	for (uint32_t y = 0; y < m_FinalImage->GetHeight(); y++)
 	{
 		for (uint32_t x = 0; x < m_FinalImage->GetWidth(); x++)
 		{
-			ray.Direction = camera.GetRayDirections()[x + y * m_FinalImage->GetWidth()];
-			glm::vec4 colour = TraceRay(scene, ray);
-			colour = glm::clamp(colour, glm::vec4(0.0f), glm::vec4(1.0f));
-			m_ImageData[x + y * m_FinalImage->GetWidth()] = Utils::ConvertToRGBA(colour);
+			glm::vec4 colour = glm::vec4(0.0f);
+			for (uint32_t dy = 0; dy < camera.GetSSAALevel(); dy++)
+			{
+				for (uint32_t dx = 0; dx < camera.GetSSAALevel(); dx++)
+				{
+					colour += m_ImageDataSSAABuffer[(x * camera.GetSSAALevel() + dx) + (y * camera.GetSSAALevel() + dy) * m_FinalImage->GetWidth() * camera.GetSSAALevel()];
+				}
+			}
+
+
+			m_ImageData[x + y * m_FinalImage->GetWidth()] = Utils::ConvertToRGBA(colour / (float)(camera.GetSSAALevel() * camera.GetSSAALevel()));
 		}
 	}
 
