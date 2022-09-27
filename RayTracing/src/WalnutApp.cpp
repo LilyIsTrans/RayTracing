@@ -6,7 +6,9 @@
 
 #include "Renderer.h"
 #include "Camera.h";
-
+#ifndef GLM_FORCE_INTRINSICS
+#define GLM_FORCE_INTRINSICS
+#endif // !GLM_FORCE_INTRINSICS
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace Walnut;
@@ -48,15 +50,6 @@ public:
 		ImGui::End();
 
 		ImGui::Begin("Scene");
-		/*
-			ImGui::SliderFloat3("Sphere Origin", &m_Renderer.SphereOrigin.x, -1.0f, 1.0f);
-			ImGui::SliderFloat("Sphere Radius", &m_Renderer.radius, 0.0f, 2.0f);
-			if (ImGui::SliderFloat3("Light Direction", &m_Renderer.lightDirProxy.x, -1.0f, 1.0f))
-			{
-				m_Renderer.lightDirUpdated();
-			}
-			ImGui::Checkbox("Do shading", &m_Renderer.doShading);
-		*/
 
 		for (size_t i = 0; i < m_Scene.Spheres.size(); i++)
 		{

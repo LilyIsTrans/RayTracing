@@ -1,5 +1,8 @@
 #include "Camera.h"
 
+#ifndef GLM_FORCE_INTRINSICS
+#define GLM_FORCE_INTRINSICS
+#endif // !GLM_FORCE_INTRINSICS
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -31,7 +34,7 @@ void Camera::OnUpdate(float ts)
 
 	bool moved = false;
 
-	constexpr glm::vec3 upDirection(0.0f, 1.0f, 0.0f);
+	glm::vec3 upDirection(0.0f, 1.0f, 0.0f); // May be made constexpr if not using SIMD
 	glm::vec3 rightDirection = glm::cross(m_ForwardDirection, upDirection);
 
 	float speed = 5.0f;

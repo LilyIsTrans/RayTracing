@@ -23,7 +23,7 @@ namespace Utils {
 		i = *(long*)&y;
 		i = 0x5f3759df - (i >> 1);
 		y = *(float*)&i;
-		//y = y * (threehalfs - (x2 * y * y));
+		y = y * (threehalfs - (x2 * y * y));
 		//y = y * (threehalfs - (x2 * y * y)); // Optional second newton iteration
 
 		return y;
@@ -61,11 +61,6 @@ void Renderer::OnResize(uint32_t width, uint32_t height)
 
 void Renderer::Render(const Scene& scene, const Camera& camera)
 {
-	
-	
-
-	
-	
 	Ray ray;
 	ray.Origin = camera.GetPosition();;
 
@@ -85,7 +80,7 @@ void Renderer::Render(const Scene& scene, const Camera& camera)
 
 
 
-glm::vec4 Renderer::TraceRay(const Scene& scene, const Ray& ray)
+glm::vec4 Renderer::TraceRay(const Scene& scene, const Ray& ray, uint32_t bounce)
 {
 	// (bx^2 + by^2)t^2 + (2(axbx + ayby))t + (ax^2 + ay^2 - r^2) = 0
 
@@ -100,18 +95,20 @@ glm::vec4 Renderer::TraceRay(const Scene& scene, const Ray& ray)
 
 	const Sphere* closestSphere = nullptr;
 	float hitDistance = std::numeric_limits<float>::max();
+	float a = glm::dot(ray.Direction, ray.Direction); //(bx^2 + by^2)
 	for (const Sphere& sphere : scene.Spheres)
 	{
 		glm::vec3 origin = ray.Origin - sphere.Position;
 
-		float a = glm::dot(ray.Direction, ray.Direction); //(bx^2 + by^2)
-		float b = 2.0f * glm::dot(origin, ray.Direction); //(2(axbx + ayby))
+		
+		float bo2 = glm::dot(origin, ray.Direction); //(2(axbx + ayby))
+		float b = 2.0f * bo2;
 		float c = glm::dot(origin, origin) - sphere.Radius * sphere.Radius; //(ax^2 + ay^2 - r^2)
 
 		// Quadratic formula discriminant:
 		// b^2 - 4ac
 
-		float discriminant = b * b - 4.0f * a * c;
+		float discriminant = b * b - (4.0f * a * c); // Actually 0.25 times the discriminant, since we might only care if it's nonnegative
 		if (discriminant < 0.0f)
 			continue;
 
@@ -119,7 +116,7 @@ glm::vec4 Renderer::TraceRay(const Scene& scene, const Ray& ray)
 
 		//float t0 = ( - b + sqrtf(discriminant)) / (2.0f * a);
 		float closestT = (-b - glm::sqrt(discriminant)) / (2.0f * a);
-		if (closestT < hitDistance)
+		if (closestT < hitDistance && closestT > 0.1f)
 		{
 			hitDistance = closestT;
 			closestSphere = &sphere;
@@ -127,7 +124,7 @@ glm::vec4 Renderer::TraceRay(const Scene& scene, const Ray& ray)
 	}
 
 	if (closestSphere == nullptr)
-		return glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+		return glm::vec4(-0.0f, -0.0f, -0.0f, -0.0f);
 
 	if (!doShading)
 		return glm::vec4(closestSphere->Albedo, 1.0f);
@@ -136,14 +133,26 @@ glm::vec4 Renderer::TraceRay(const Scene& scene, const Ray& ray)
 	
 	
 	glm::vec3 hitPoint = origin + ray.Direction * hitDistance;
-	//glm::vec3 colour = glm::vec3(glm::normalize(hitPoint) * 0.5f + 0.5f);
 
-	float lightLevel = glm::max(glm::dot(glm::normalize(hitPoint), -lightDir), 0.0f);
-	//float lightLevel = (glm::dot(Utils::Fast_normalize(hitPoint - SphereOrigin), -lightDir) + 1.0f) / 2.0f;
+	Ray newRay;
+	newRay.Origin = ray.Origin + ray.Direction * hitDistance;
+	if (closestSphere->Albedo != glm::vec3(0.0f))
+	{
+		newRay.Direction = -lightDir;
+		if (TraceRay(scene, newRay, bounce + 1) == glm::vec4(-0.0f, -0.0f, -0.0f, -0.0f))
+		{
+			float lightLevel = glm::max(glm::dot(Utils::Fast_normalize(hitPoint), -lightDir), 0.0f);
+			return glm::vec4(closestSphere->Albedo * lightLevel, 1.0f);
+		}
+		return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	}
+	else
+	{
+		
+		newRay.Direction = glm::normalize(hitPoint);
+		return TraceRay(scene, newRay, bounce + 1);
+	}
 	
-	//return glm::vec4(lightLevel, lightLevel, lightLevel, 1);
-
-	return glm::vec4(closestSphere->Albedo * lightLevel, 1.0f);
 	
 
 	
