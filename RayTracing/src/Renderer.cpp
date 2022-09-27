@@ -57,13 +57,13 @@ void Renderer::OnResize(uint32_t width, uint32_t height)
 
 	delete[] m_ImageData;
 	m_ImageData = new uint32_t[width * height];
+	lightDirUpdated();
 }
 
 void Renderer::Render(const Scene& scene, const Camera& camera)
 {
 	Ray ray;
-	ray.Origin = camera.GetPosition();;
-
+	ray.Origin = camera.GetPosition();
 	for (uint32_t y = 0; y < m_FinalImage->GetHeight(); y++)
 	{
 		for (uint32_t x = 0; x < m_FinalImage->GetWidth(); x++)
@@ -152,8 +152,4 @@ glm::vec4 Renderer::TraceRay(const Scene& scene, const Ray& ray, uint32_t bounce
 		newRay.Direction = glm::normalize(hitPoint);
 		return TraceRay(scene, newRay, bounce + 1);
 	}
-	
-	
-
-	
 }
