@@ -113,7 +113,7 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 		else
 			lightIntensity = 1.0f;
 
-		glm::vec3 sphereColour = sphere.Albedo;
+		glm::vec3 sphereColour = sphere.Mat.Albedo;
 		sphereColour *= lightIntensity;
 		colour += sphereColour * multiplier;
 

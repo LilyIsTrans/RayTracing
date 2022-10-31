@@ -23,15 +23,15 @@ public:
 		{
 			Sphere sphere;
 			sphere.Position = { 0.0f, 0.0f, 0.0f };
-			sphere.Radius = 0.5f;
-			sphere.Albedo = { 1.0f, 0.0f, 1.0f };
+			sphere.Radius = 1.0f;
+			sphere.Mat.Albedo = { 1.0f, 0.0f, 1.0f };
 			m_Scene.Spheres.push_back(sphere);
 		}
 		{
 			Sphere sphere;
-			sphere.Position = { 1.0f, 0.0f, -5.0f };
-			sphere.Radius = 1.5f;
-			sphere.Albedo = { 0.2f, 0.3f, 1.0f };
+			sphere.Position = { 0.0f, -101.0f, 0.0f };
+			sphere.Radius = 100.0f;
+			sphere.Mat.Albedo = { 0.2f, 0.3f, 1.0f };
 			m_Scene.Spheres.push_back(sphere);
 		}
 	}
@@ -58,7 +58,9 @@ public:
 			Sphere& sphere = m_Scene.Spheres[i];
 			ImGui::DragFloat3("Position", glm::value_ptr(sphere.Position), 0.1f);
 			ImGui::DragFloat("Radius", &sphere.Radius, 0.1f);
-			ImGui::ColorEdit3("Albedo", glm::value_ptr(sphere.Albedo), 0.1f);
+			ImGui::ColorEdit3("Albedo", glm::value_ptr(sphere.Mat.Albedo), 0.1f);
+			ImGui::DragFloat("Roughness", &(sphere.Mat.Roughness), 0.1f);
+			ImGui::DragFloat("Metallic", &(sphere.Mat.Metallic), 0.1f);
 
 			ImGui::Separator();
 
@@ -80,12 +82,16 @@ public:
 			Sphere newSphere;
 			newSphere.Position = m_newSpherePosition;
 			newSphere.Radius = m_newSphereRadius;
-			newSphere.Albedo = m_newSphereAlbedo;
+			newSphere.Mat.Albedo = m_newSphereAlbedo;
+			newSphere.Mat.Roughness = m_newSphereRoughness;
+			newSphere.Mat.Metallic = m_newSphereMetallic;
 			m_Scene.Spheres.push_back(newSphere);
 		}
 		ImGui::DragFloat3("Position", glm::value_ptr(m_newSpherePosition), 0.1f);
 		ImGui::DragFloat("Radius", &m_newSphereRadius, 0.1f);
 		ImGui::ColorEdit3("Albedo", glm::value_ptr(m_newSphereAlbedo), 0.1f);
+		ImGui::DragFloat("Roughness", &(m_newSphereRoughness), 0.1f);
+		ImGui::DragFloat("Metallic", &(m_newSphereMetallic), 0.1f);
 		ImGui::End();
 
 
@@ -131,6 +137,8 @@ private:
 
 	glm::vec3 m_newSpherePosition = glm::vec3(0.0f);
 	glm::vec3 m_newSphereAlbedo = glm::vec3(0.0f);
+	float m_newSphereRoughness = 1.0f;
+	float m_newSphereMetallic = 0.0f;
 	float m_newSphereRadius = 0.0f;
 
 	float m_LastRenderTime = 0.0f;
