@@ -20,18 +20,26 @@ public:
 	ExampleLayer()
 		: m_Camera(45.0f, 0.1f, 100.0f) 
 	{
+		Material& pinkSphere = m_Scene.Materials.emplace_back();
+		pinkSphere.Albedo = { 1.0f, 0.0f, 1.0f };
+		pinkSphere.Roughness = 0.0f;
+		Material& blueSphere = m_Scene.Materials.emplace_back();
+		blueSphere.Albedo = { 0.2f, 0.3f, 1.0f };
+		blueSphere.Roughness = 0.1f;
+
+
 		{
 			Sphere sphere;
 			sphere.Position = { 0.0f, 0.0f, 0.0f };
 			sphere.Radius = 1.0f;
-			sphere.Mat.Albedo = { 1.0f, 0.0f, 1.0f };
+			sphere.MaterialIndex = 0;
 			m_Scene.Spheres.push_back(sphere);
 		}
 		{
 			Sphere sphere;
 			sphere.Position = { 0.0f, -101.0f, 0.0f };
 			sphere.Radius = 100.0f;
-			sphere.Mat.Albedo = { 0.2f, 0.3f, 1.0f };
+			sphere.MaterialIndex = 1;
 			m_Scene.Spheres.push_back(sphere);
 		}
 	}
@@ -50,7 +58,7 @@ public:
 		ImGui::End();
 
 		ImGui::Begin("Scene");
-
+		ImGui::Text("Objects");
 		for (size_t i = 0; i < m_Scene.Spheres.size(); i++)
 		{
 			ImGui::PushID(i);
@@ -58,23 +66,35 @@ public:
 			Sphere& sphere = m_Scene.Spheres[i];
 			ImGui::DragFloat3("Position", glm::value_ptr(sphere.Position), 0.1f);
 			ImGui::DragFloat("Radius", &sphere.Radius, 0.1f);
-			ImGui::ColorEdit3("Albedo", glm::value_ptr(sphere.Mat.Albedo), 0.1f);
-			ImGui::DragFloat("Roughness", &(sphere.Mat.Roughness), 0.1f);
-			ImGui::DragFloat("Metallic", &(sphere.Mat.Metallic), 0.1f);
+			ImGui::DragInt("Material", &sphere.MaterialIndex, 1.0f, 0, (int)m_Scene.Materials.size() - 1);
+			
 
 			ImGui::Separator();
 
 			ImGui::PopID();
 		}
 		
+		for (size_t i = 0; i < m_Scene.Materials.size(); i++)
+		{
+			ImGui::PushID(i);
 
+			Material& material = m_Scene.Materials[i];
+
+			ImGui::ColorEdit3("Albedo", glm::value_ptr(material.Albedo), 0.1f);
+			ImGui::SliderFloat("Roughness", &(material.Roughness), 0.0f, 1.0f);
+			ImGui::SliderFloat("Metallic", &(material.Metallic), 0.0f, 1.0f);
+
+			ImGui::Separator();
+
+			ImGui::PopID();
+		}
 
 		if (ImGui::SliderFloat3("Light Direction", &m_Renderer.lightDirProxy.x, -1.0f, 1.0f))
 		{
 			m_Renderer.lightDirUpdated();
 		}
 
-		ImGui::Checkbox("Do shading", &m_Renderer.doShading);
+		//ImGui::Checkbox("Do shading", &m_Renderer.doShading);
 		ImGui::Separator();
 		ImGui::Text("Add Sphere");
 		if (ImGui::Button("Add to Scene"))
@@ -82,16 +102,29 @@ public:
 			Sphere newSphere;
 			newSphere.Position = m_newSpherePosition;
 			newSphere.Radius = m_newSphereRadius;
-			newSphere.Mat.Albedo = m_newSphereAlbedo;
-			newSphere.Mat.Roughness = m_newSphereRoughness;
-			newSphere.Mat.Metallic = m_newSphereMetallic;
+			newSphere.MaterialIndex = m_newSphereMaterialIndex;
 			m_Scene.Spheres.push_back(newSphere);
 		}
 		ImGui::DragFloat3("Position", glm::value_ptr(m_newSpherePosition), 0.1f);
 		ImGui::DragFloat("Radius", &m_newSphereRadius, 0.1f);
-		ImGui::ColorEdit3("Albedo", glm::value_ptr(m_newSphereAlbedo), 0.1f);
-		ImGui::DragFloat("Roughness", &(m_newSphereRoughness), 0.1f);
-		ImGui::DragFloat("Metallic", &(m_newSphereMetallic), 0.1f);
+		ImGui::DragInt("Material", &m_newSphereMaterialIndex, 1.0f, 0, (int)m_Scene.Materials.size() - 1);
+		
+		
+
+		ImGui::Separator();
+		ImGui::Text("Add Material");
+		if (ImGui::Button("Add to Scene"))
+		{
+			Material newMaterial;
+			newMaterial.Albedo = m_newMaterialAlbedo;
+			newMaterial.Roughness = m_newMaterialRoughness;
+			newMaterial.Metallic = m_newMaterialMetallic;
+			m_Scene.Materials.push_back(newMaterial);
+		}
+		ImGui::ColorEdit3("Albedo", glm::value_ptr(m_newMaterialAlbedo), 0.1f);
+		ImGui::SliderFloat("Roughness", &(m_newMaterialRoughness), 0.0f, 1.0f);
+		ImGui::SliderFloat("Metallic", &(m_newMaterialMetallic), 0.0f, 1.0f);
+
 		ImGui::End();
 
 
@@ -136,10 +169,11 @@ private:
 	uint32_t pm_ViewportWidth = -1, pm_ViewportHeight = -1;
 
 	glm::vec3 m_newSpherePosition = glm::vec3(0.0f);
-	glm::vec3 m_newSphereAlbedo = glm::vec3(0.0f);
-	float m_newSphereRoughness = 1.0f;
-	float m_newSphereMetallic = 0.0f;
+	glm::vec3 m_newMaterialAlbedo = glm::vec3(0.0f);
+	float m_newMaterialRoughness = 1.0f;
+	float m_newMaterialMetallic = 0.0f;
 	float m_newSphereRadius = 0.0f;
+	int m_newSphereMaterialIndex = 0;
 
 	float m_LastRenderTime = 0.0f;
 };
