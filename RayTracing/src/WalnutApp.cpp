@@ -46,7 +46,8 @@ public:
 
 	virtual void OnUpdate(float ts) override
 	{
-		m_Camera.OnUpdate(ts);
+		if (m_Camera.OnUpdate(ts))
+			m_Renderer.ResetFrameIndex();
 	}
 
 
@@ -55,6 +56,20 @@ public:
 		ImGui::Begin("Info");
 		ImGui::Text("Last render: %.3fms", m_LastRenderTime);
 		ImGui::Text("Current FPS: %.3ffps", 1000.0f / m_LastRenderTime);
+		ImGui::End();
+
+		ImGui::Begin("Controls");
+		if (ImGui::Button("Render"))
+		{
+			Render();
+		}
+
+		ImGui::Checkbox("Accumulate", &m_Renderer.GetSettings().Accumulate);
+
+		if (ImGui::Button("Reset"))
+		{
+			m_Renderer.ResetFrameIndex();
+		}
 		ImGui::End();
 
 		ImGui::Begin("Scene");
@@ -74,11 +89,11 @@ public:
 			ImGui::PopID();
 		}
 		
-		for (size_t i = 0; i < m_Scene.Materials.size(); i++)
+		for (size_t i = m_Scene.Spheres.size(); i < m_Scene.Materials.size() + m_Scene.Spheres.size(); i++)
 		{
 			ImGui::PushID(i);
 
-			Material& material = m_Scene.Materials[i];
+			Material& material = m_Scene.Materials[i - m_Scene.Spheres.size()];
 
 			ImGui::ColorEdit3("Albedo", glm::value_ptr(material.Albedo), 0.1f);
 			ImGui::SliderFloat("Roughness", &(material.Roughness), 0.0f, 1.0f);
@@ -97,7 +112,7 @@ public:
 		//ImGui::Checkbox("Do shading", &m_Renderer.doShading);
 		ImGui::Separator();
 		ImGui::Text("Add Sphere");
-		if (ImGui::Button("Add to Scene"))
+		if (ImGui::Button("Add Sphere to Scene"))
 		{
 			Sphere newSphere;
 			newSphere.Position = m_newSpherePosition;
@@ -113,7 +128,7 @@ public:
 
 		ImGui::Separator();
 		ImGui::Text("Add Material");
-		if (ImGui::Button("Add to Scene"))
+		if (ImGui::Button("Add Material to Scene"))
 		{
 			Material newMaterial;
 			newMaterial.Albedo = m_newMaterialAlbedo;
