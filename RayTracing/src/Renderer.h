@@ -66,6 +66,7 @@ private:
 
 	glm::vec4* m_AccumulationData = nullptr;
 
+	std::vector<uint32_t> m_ImageHorizontalIter, m_ImageVerticalIter;
 
 	uint32_t m_FrameIndex = 1;
 
