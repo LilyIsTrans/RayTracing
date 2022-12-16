@@ -86,22 +86,22 @@ void Renderer::Render(const Scene& scene, const Camera& camera)
 #define MT 1
 #if MT
 
-	std::for_each(std::execution::par, m_ImageVerticalIter.begin(), m_ImageVerticalIter.end(),
+	std::for_each(std::execution::par_unseq, m_ImageVerticalIter.begin(), m_ImageVerticalIter.end(),
 		[this](uint32_t y)
 		{
 
-			std::for_each(std::execution::par, m_ImageHorizontalIter.begin(), m_ImageHorizontalIter.end(),
-			[this, y](uint32_t x)
-				{
-					glm::vec4 colour = PerPixel(x, y);
-					m_AccumulationData[x + y * m_FinalImage->GetWidth()] += colour;
+			for (uint32_t x = 0; x < m_FinalImage->GetWidth(); x++)
+			{
 
-					glm::vec4 accumulatedColour = m_AccumulationData[x + y * m_FinalImage->GetWidth()];
-					accumulatedColour /= (float)m_FrameIndex;
+				glm::vec4 colour = PerPixel(x, y);
+				m_AccumulationData[x + y * m_FinalImage->GetWidth()] += colour;
 
-					colour = glm::clamp(accumulatedColour, glm::vec4(0.0f), glm::vec4(1.0f));
-					m_ImageData[x + y * m_FinalImage->GetWidth()] = Utils::ConvertToRGBA(colour);
-				});
+				glm::vec4 accumulatedColour = m_AccumulationData[x + y * m_FinalImage->GetWidth()];
+				accumulatedColour /= (float)m_FrameIndex;
+
+				colour = glm::clamp(accumulatedColour, glm::vec4(0.0f), glm::vec4(1.0f));
+				m_ImageData[x + y * m_FinalImage->GetWidth()] = Utils::ConvertToRGBA(colour);
+			}
 
 		});
 #else
@@ -220,11 +220,11 @@ Renderer::HitPayload Renderer::TraceRay(const Ray& ray)
 
 	if (closestSphere < 0)
 		return Miss(ray);
-
+	
 	return ClosestHit(ray, hitDistance, closestSphere);
 }
 
-Renderer::HitPayload Renderer::ClosestHit(const Ray& ray, float hitDistance, int objectIndex)
+inline Renderer::HitPayload Renderer::ClosestHit(const Ray& ray, float hitDistance, int objectIndex)
 {
 	Renderer::HitPayload payload;
 	payload.HitDistance = hitDistance;
@@ -245,7 +245,7 @@ Renderer::HitPayload Renderer::ClosestHit(const Ray& ray, float hitDistance, int
 }
 
 
-Renderer::HitPayload Renderer::Miss(const Ray& ray)
+inline Renderer::HitPayload Renderer::Miss(const Ray& ray)
 {
 	Renderer::HitPayload payload;
 	payload.HitDistance = -1.0f;

@@ -56,8 +56,8 @@ private:
 	glm::vec4 PerPixel(uint32_t x, uint32_t y); // RayGen
 
 	HitPayload TraceRay(const Ray& ray);
-	HitPayload ClosestHit(const Ray& ray, float hitDistance, int objectIndex);
-	HitPayload Miss(const Ray& ray);
+	inline HitPayload ClosestHit(const Ray& ray, float hitDistance, int objectIndex);
+	inline HitPayload Miss(const Ray& ray);
 
 private:
 	std::shared_ptr<Walnut::Image> m_FinalImage;
