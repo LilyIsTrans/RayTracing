@@ -79,9 +79,12 @@ public:
 			ImGui::PushID(i);
 
 			Sphere& sphere = m_Scene.Spheres[i];
-			ImGui::DragFloat3("Position", glm::value_ptr(sphere.Position), 0.1f);
-			ImGui::DragFloat("Radius", &sphere.Radius, 0.1f);
-			ImGui::DragInt("Material", &sphere.MaterialIndex, 1.0f, 0, (int)m_Scene.Materials.size() - 1);
+			if (ImGui::DragFloat3("Position", glm::value_ptr(sphere.Position), 0.1f) ||
+				ImGui::DragFloat("Radius", &sphere.Radius, 0.1f) ||
+				ImGui::DragInt("Material", &sphere.MaterialIndex, 1.0f, 0, (int)m_Scene.Materials.size() - 1))
+			{
+				m_Renderer.ResetFrameIndex();
+			}
 			
 
 			ImGui::Separator();
@@ -95,9 +98,12 @@ public:
 
 			Material& material = m_Scene.Materials[i - m_Scene.Spheres.size()];
 
-			ImGui::ColorEdit3("Albedo", glm::value_ptr(material.Albedo), 0.1f);
-			ImGui::SliderFloat("Roughness", &(material.Roughness), 0.0f, 1.0f);
-			ImGui::SliderFloat("Metallic", &(material.Metallic), 0.0f, 1.0f);
+			if (ImGui::ColorEdit3("Albedo", glm::value_ptr(material.Albedo), 0.1f) ||
+				ImGui::SliderFloat("Roughness", &(material.Roughness), 0.0f, 1.0f) ||
+				ImGui::SliderFloat("Metallic", &(material.Metallic), 0.0f, 1.0f))
+			{
+				m_Renderer.ResetFrameIndex();
+			}
 
 			ImGui::Separator();
 
