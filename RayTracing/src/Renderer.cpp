@@ -73,6 +73,8 @@ void Renderer::OnResize(uint32_t width, uint32_t height)
 	{
 		m_ImageVerticalIter[i] = i;
 	}
+
+	ResetFrameIndex();
 }
 
 void Renderer::Render(const Scene& scene, const Camera& camera)
@@ -135,12 +137,16 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 	Ray ray;
 	ray.Origin = m_ActiveCamera->GetPosition();
 	ray.Direction = m_ActiveCamera->GetRayDirections()[x + y * m_FinalImage->GetWidth()];
+	if (GetSettings().AntiAlias)
+	{
+		ray.Direction += Walnut::Random::Vec3(-0.001f, 0.001f);
+	}
 
 	glm::vec3 colour(0.0f);
 
 	float multiplier = 1.0f;
 
-	int bounces = 5;
+	int bounces = 20;
 
 	for (int i = 0; i < bounces; i++)
 	{

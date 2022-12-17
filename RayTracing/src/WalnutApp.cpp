@@ -64,12 +64,21 @@ public:
 			Render();
 		}
 
-		ImGui::Checkbox("Accumulate", &m_Renderer.GetSettings().Accumulate);
-
-		if (ImGui::Button("Reset"))
+		if (ImGui::Checkbox("Accumulate", &m_Renderer.GetSettings().Accumulate))
 		{
 			m_Renderer.ResetFrameIndex();
 		}
+
+		if (ImGui::Button("Reset Accumulation"))
+		{
+			m_Renderer.ResetFrameIndex();
+		}
+
+		if (ImGui::Checkbox("Anti Aliasing", &m_Renderer.GetSettings().AntiAlias))
+		{
+			m_Renderer.ResetFrameIndex();
+		}
+
 		ImGui::End();
 
 		ImGui::Begin("Scene");
