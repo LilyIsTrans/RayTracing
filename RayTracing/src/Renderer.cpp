@@ -163,16 +163,20 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 
 		float lightIntensity;
 
-		if (doShading)
-			lightIntensity = glm::max(glm::dot(payload.WorldNormal, -lightDir), 0.0f);
+		Ray toLight;
+		toLight.Direction = -lightDir;
+		toLight.Origin = payload.WorldPosition + payload.WorldNormal * 0.0001f;
+		if (TraceRay(toLight).HitDistance < 0.0f) //If there is nothing between hit position and the light source
+			lightIntensity = glm::max(glm::dot(payload.WorldNormal, -lightDir), 0.0f) * (1.0f - material.Metallic);
 		else
-			lightIntensity = 1.0f;
-
+		{
+			lightIntensity = 0.0f;
+		}
 		glm::vec3 sphereColour = material.Albedo;
 		sphereColour *= lightIntensity;
 		colour += sphereColour * multiplier;
 
-		multiplier *= 0.5f;
+		multiplier *= 0.5;
 
 		ray.Origin = payload.WorldPosition + payload.WorldNormal * 0.0001f;
 		ray.Direction = glm::reflect(ray.Direction, 
