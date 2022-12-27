@@ -153,10 +153,7 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 		auto payload = TraceRay(ray);
 		if (payload.HitDistance < 0.0f)
 		{
-			glm::vec3 blueSkyColour = glm::vec3(0.6f, 0.7f, 0.9f);
-			glm::vec3 yellowSkyColour = glm::vec3(0.8f, 0.4f, 0.1f);
-			float blendParameter = (1.0f / (9.0f * ray.Direction.y - 10.0f)) + 1.0f;
-			glm::vec3 skyColour = ((1.0f - blendParameter) * yellowSkyColour) + (blendParameter * blueSkyColour);
+			glm::vec3 skyColour = glm::vec3(0.6f, 0.7f, 0.9f);
 			colour += skyColour * multiplier;
 			break;
 		}
