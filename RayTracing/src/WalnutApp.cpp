@@ -12,7 +12,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace Walnut;
-
+#define SCENE_2
 
 class ExampleLayer : public Walnut::Layer
 {
@@ -20,13 +20,17 @@ public:
 	ExampleLayer()
 		: m_Camera(45.0f, 0.1f, 100.0f) 
 	{
-		Material& pinkSphere = m_Scene.Materials.emplace_back();
-		pinkSphere.Albedo = { 1.0f, 0.0f, 1.0f };
-		pinkSphere.Roughness = 0.0f;
-		Material& blueSphere = m_Scene.Materials.emplace_back();
-		blueSphere.Albedo = { 0.2f, 0.3f, 1.0f };
-		blueSphere.Roughness = 0.1f;
-
+#ifdef SCENE_1
+		{
+			Material& material = m_Scene.Materials.emplace_back();
+			material.Albedo = { 1.0f, 0.0f, 1.0f };
+			material.Roughness = 0.0f;
+		}
+		{
+			Material& material = m_Scene.Materials.emplace_back();
+			material.Albedo = { 0.2f, 0.3f, 1.0f };
+			material.Roughness = 0.1f;
+		}
 
 		{
 			Sphere sphere;
@@ -42,6 +46,9 @@ public:
 			sphere.MaterialIndex = 1;
 			m_Scene.Spheres.push_back(sphere);
 		}
+#else
+#include "TestScene.h"
+#endif
 	}
 
 	virtual void OnUpdate(float ts) override
