@@ -203,13 +203,10 @@ Renderer::HitPayload Renderer::TraceRay(const Ray& ray)
 		// Quadratic formula discriminant:
 		// b^2 - 4ac
 
-		float discriminant = b * b - (4.0f * a * c); // Actually 0.25 times the discriminant, since we might only care if it's nonnegative
+		float discriminant = b * b - (4.0f * a * c);
 		if (discriminant < 0.0f)
 			continue;
 
-		
-
-		//float t0 = ( - b + sqrtf(discriminant)) / (2.0f * a);
 		float closestT = (-b - glm::sqrt(discriminant)) / (2.0f * a);
 		if (closestT < hitDistance && closestT > 0.0f)
 		{
