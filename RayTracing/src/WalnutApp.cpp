@@ -12,7 +12,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace Walnut;
-
+#define SCENE_1
 
 class ExampleLayer : public Walnut::Layer
 {
@@ -20,13 +20,17 @@ public:
 	ExampleLayer()
 		: m_Camera(45.0f, 0.1f, 100.0f) 
 	{
-		Material& pinkSphere = m_Scene.Materials.emplace_back();
-		pinkSphere.Albedo = { 1.0f, 0.0f, 1.0f };
-		pinkSphere.Roughness = 0.0f;
-		Material& blueSphere = m_Scene.Materials.emplace_back();
-		blueSphere.Albedo = { 0.2f, 0.3f, 1.0f };
-		blueSphere.Roughness = 0.1f;
-
+#ifdef SCENE_1
+		{
+			Material& material = m_Scene.Materials.emplace_back();
+			material.Albedo = { 1.0f, 0.0f, 1.0f };
+			material.Roughness = 0.0f;
+		}
+		{
+			Material& material = m_Scene.Materials.emplace_back();
+			material.Albedo = { 0.2f, 0.3f, 1.0f };
+			material.Roughness = 0.1f;
+		}
 
 		{
 			Sphere sphere;
@@ -42,6 +46,9 @@ public:
 			sphere.MaterialIndex = 1;
 			m_Scene.Spheres.push_back(sphere);
 		}
+#else
+#include "TestScene.h"
+#endif
 	}
 
 	virtual void OnUpdate(float ts) override
@@ -64,12 +71,21 @@ public:
 			Render();
 		}
 
-		ImGui::Checkbox("Accumulate", &m_Renderer.GetSettings().Accumulate);
-
-		if (ImGui::Button("Reset"))
+		if (ImGui::Checkbox("Accumulate", &m_Renderer.GetSettings().Accumulate))
 		{
 			m_Renderer.ResetFrameIndex();
 		}
+
+		if (ImGui::Button("Reset Accumulation"))
+		{
+			m_Renderer.ResetFrameIndex();
+		}
+
+		if (ImGui::Checkbox("Anti Aliasing", &m_Renderer.GetSettings().AntiAlias))
+		{
+			m_Renderer.ResetFrameIndex();
+		}
+
 		ImGui::End();
 
 		ImGui::Begin("Scene");
@@ -79,13 +95,10 @@ public:
 			ImGui::PushID(i);
 
 			Sphere& sphere = m_Scene.Spheres[i];
-
 			bool PositionChanged = ImGui::DragFloat3("Position", glm::value_ptr(sphere.Position), 0.1f);
 			bool RadiusChanged = ImGui::DragFloat("Radius", &sphere.Radius, 0.1f);
 			bool MaterialChanged = ImGui::DragInt("Material", &sphere.MaterialIndex, 1.0f, 0, (int)m_Scene.Materials.size() - 1);
-
-			if (PositionChanged || RadiusChanged || MaterialChanged) //Using local variables to prevent short-circuit evaluation by the || operator never calling some widget's code, leading to flickering
-
+			if (PositionChanged || RadiusChanged || MaterialChanged)
 			{
 				m_Renderer.ResetFrameIndex();
 			}
@@ -101,12 +114,10 @@ public:
 			ImGui::PushID(i);
 
 			Material& material = m_Scene.Materials[i - m_Scene.Spheres.size()];
-
 			bool AlbedoChanged = ImGui::ColorEdit3("Albedo", glm::value_ptr(material.Albedo), 0.1f);
 			bool RoughnessChanged = ImGui::SliderFloat("Roughness", &(material.Roughness), 0.0f, 1.0f);
 			bool MetallicChanged = ImGui::SliderFloat("Metallic", &(material.Metallic), 0.0f, 1.0f);
-
-			if (AlbedoChanged || RoughnessChanged || MetallicChanged) //Using local variables to prevent short-circuit evaluation by the || operator never calling some widget's code, leading to flickering
+			if (AlbedoChanged || RoughnessChanged || MetallicChanged)
 			{
 				m_Renderer.ResetFrameIndex();
 			}
@@ -121,6 +132,7 @@ public:
 			m_Renderer.lightDirUpdated();
 		}
 
+		//ImGui::Checkbox("Do shading", &m_Renderer.doShading);
 		ImGui::Separator();
 		ImGui::Text("Add Sphere");
 		if (ImGui::Button("Add Sphere to Scene"))
