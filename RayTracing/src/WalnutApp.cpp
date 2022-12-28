@@ -12,7 +12,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace Walnut;
-#define SCENE_2
+#define SCENE_1
 
 class ExampleLayer : public Walnut::Layer
 {
