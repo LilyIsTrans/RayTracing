@@ -130,6 +130,7 @@ public:
 		if (ImGui::SliderFloat3("Light Direction", &m_Renderer.lightDirProxy.x, -1.0f, 1.0f))
 		{
 			m_Renderer.lightDirUpdated();
+			m_Renderer.ResetFrameIndex();
 		}
 
 		//ImGui::Checkbox("Do shading", &m_Renderer.doShading);
