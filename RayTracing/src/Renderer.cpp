@@ -134,6 +134,8 @@ void Renderer::Render(const Scene& scene, const Camera& camera)
 
 glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 {
+	const glm::vec3 skyColour = glm::vec3(0.6f, 0.7f, 0.9f);
+	
 	Ray ray;
 	ray.Origin = m_ActiveCamera->GetPosition();
 	ray.Direction = m_ActiveCamera->GetRayDirections()[x + y * m_FinalImage->GetWidth()];
@@ -144,43 +146,47 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 
 	glm::vec3 colour(0.0f);
 
+
 	float multiplier = 1.0f;
 
-	int bounces = 20;
+	HitPayload payload;
+	int loops = 0;
+	std::vector<glm::vec3> colours;
+	colours.reserve(bounces + 1);
+	std::vector<float> lightLevels;
+	lightLevels.reserve(bounces + 1);
 
-	for (int i = 0; i < bounces; i++)
+	while (((payload = TraceRay(ray)).HitDistance >= 0.0f) && loops < bounces)
 	{
-		auto payload = TraceRay(ray);
-		if (payload.HitDistance < 0.0f)
-		{
-			glm::vec3 skyColour = glm::vec3(0.6f, 0.7f, 0.9f);
-			colour += skyColour * multiplier;
-			break;
-		}
-
 		const Sphere& sphere = m_ActiveScene->Spheres[payload.ObjectIndex];
 		const Material& material = m_ActiveScene->Materials[sphere.MaterialIndex];
 
-		float lightIntensity;
-
-		if (doShading)
-			lightIntensity = glm::max(glm::dot(payload.WorldNormal, -lightDir), 0.0f);
-		else
-			lightIntensity = 1.0f;
-
-		glm::vec3 sphereColour = material.Albedo;
-		sphereColour *= lightIntensity;
-		colour += sphereColour * multiplier;
-
-		multiplier *= 0.5f;
-
 		ray.Origin = payload.WorldPosition + payload.WorldNormal * 0.0001f;
-		ray.Direction = glm::reflect(ray.Direction, 
-			payload.WorldNormal + material.Roughness * Walnut::Random::Vec3(-0.5f, 0.5f));
+		ray.Direction = -lightDir;
+		colours.push_back(material.Albedo);
+		lightLevels.push_back((TraceRay(ray).HitDistance < 0.0f) ? glm::max(glm::dot(payload.WorldNormal, -lightDir), 0.0f) : 0.0f);
+
+		
+		ray.Direction = glm::reflect(ray.Direction, payload.WorldNormal + material.Roughness * Walnut::Random::Vec3(-0.5f, 0.5f));
+		loops++;
+	} 
+	colours.push_back(skyColour);
+	lightLevels.push_back(glm::max(glm::dot(ray.Direction, -lightDir), 0.0f));
+	for (int i = 0; i < colours.size() - 1; ++i)
+	{
+		lightLevels[i] = lightLevels[i] + sqrt(glm::dot(colours[i + 1], colours[i + 1]));
 	}
+	for (int i = 0; i < colours.size(); ++i)
+	{
+		colour += colours[i] * lightLevels[i] * pow(0.5f, (float)i);
+	}
+	colour /= colours.size();
 
 	return glm::vec4(colour, 1.0f);
 }
+
+
+
 
 
 Renderer::HitPayload Renderer::TraceRay(const Ray& ray)

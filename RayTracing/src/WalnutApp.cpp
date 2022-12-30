@@ -60,9 +60,23 @@ public:
 
 	virtual void OnUIRender() override
 	{
+
+		if (m_LastRenderTime > 100.0f)
+			m_unnacceptableFrameTimes++;
+		
+		
 		ImGui::Begin("Info");
 		ImGui::Text("Last render: %.3fms", m_LastRenderTime);
 		ImGui::Text("Current FPS: %.3ffps", 1000.0f / m_LastRenderTime);
+
+		if (m_unnacceptableFrameTimes > 8)
+		{
+			m_unnacceptableFrameTimes = 0;
+			m_Renderer.bounces--;
+
+			ImGui::Text("Warning! Last 8 frames took too long. Reducing reflections.");
+		}
+
 		ImGui::End();
 
 		ImGui::Begin("Controls");
@@ -82,6 +96,11 @@ public:
 		}
 
 		if (ImGui::Checkbox("Anti Aliasing", &m_Renderer.GetSettings().AntiAlias))
+		{
+			m_Renderer.ResetFrameIndex();
+		}
+
+		if (ImGui::SliderInt("Bounces", &m_Renderer.bounces, 1, 10)) 
 		{
 			m_Renderer.ResetFrameIndex();
 		}
@@ -215,6 +234,8 @@ private:
 	int m_newSphereMaterialIndex = 0;
 
 	float m_LastRenderTime = 0.0f;
+
+	int m_unnacceptableFrameTimes = 0;
 };
 
 Walnut::Application* Walnut::CreateApplication(int argc, char** argv)

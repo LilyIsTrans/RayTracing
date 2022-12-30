@@ -79,4 +79,5 @@ private:
 public:
 	glm::vec3 lightDirProxy = glm::vec3(-1, -1, -1);
 	bool doShading = true;
+	int bounces = 2;
 };
