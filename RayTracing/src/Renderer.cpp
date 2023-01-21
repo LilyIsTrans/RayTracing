@@ -92,19 +92,18 @@ void Renderer::Render(const Scene& scene, const Camera& camera)
 		[this](uint32_t y)
 		{
 
-			std::for_each(std::execution::par_unseq, m_ImageVerticalIter.begin(), m_ImageVerticalIter.end(),
-			[this, y](uint32_t x)
-				{
+			for (uint32_t x = 0; x < m_FinalImage->GetWidth(); x++)
+			{
 
-					glm::vec4 colour = PerPixel(x, y);
-					m_AccumulationData[x + y * m_FinalImage->GetWidth()] += colour;
+				glm::vec4 colour = PerPixel(x, y);
+				m_AccumulationData[x + y * m_FinalImage->GetWidth()] += colour;
 
-					glm::vec4 accumulatedColour = m_AccumulationData[x + y * m_FinalImage->GetWidth()];
-					accumulatedColour /= (float)m_FrameIndex;
+				glm::vec4 accumulatedColour = m_AccumulationData[x + y * m_FinalImage->GetWidth()];
+				accumulatedColour /= (float)m_FrameIndex;
 
-					colour = glm::clamp(accumulatedColour, glm::vec4(0.0f), glm::vec4(1.0f));
-					m_ImageData[x + y * m_FinalImage->GetWidth()] = Utils::ConvertToRGBA(colour);
-				});
+				colour = glm::clamp(accumulatedColour, glm::vec4(0.0f), glm::vec4(1.0f));
+				m_ImageData[x + y * m_FinalImage->GetWidth()] = Utils::ConvertToRGBA(colour);
+			}
 
 		});
 #else
