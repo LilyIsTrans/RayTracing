@@ -25,6 +25,7 @@ public:
 	struct Settings
 	{
 		bool Accumulate = true;
+		bool AntiAlias = true;
 	};
 public:
 	Renderer() = default;
