@@ -26,6 +26,7 @@ public:
 	{
 		bool Accumulate = true;
 		bool AntiAlias = true;
+		bool UseCustomRNG = true;
 	};
 public:
 	Renderer() = default;

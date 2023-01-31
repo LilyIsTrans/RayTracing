@@ -86,6 +86,11 @@ public:
 			m_Renderer.ResetFrameIndex();
 		}
 
+		if (ImGui::Checkbox("Use custom RNG", &m_Renderer.GetSettings().UseCustomRNG))
+		{
+			m_Renderer.ResetFrameIndex();
+		}
+
 		ImGui::End();
 
 		ImGui::Begin("Scene");

@@ -1,5 +1,5 @@
 #include "Renderer.h"
-
+#include "RandUtils.h"
 #include <execution>
 
 namespace Utils {
@@ -139,7 +139,15 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 	ray.Direction = m_ActiveCamera->GetRayDirections()[x + y * m_FinalImage->GetWidth()];
 	if (GetSettings().AntiAlias)
 	{
-		ray.Direction += Walnut::Random::Vec3(-0.001f, 0.001f);
+		if (m_Settings.UseCustomRNG)
+		{
+			ray.Direction += rand_vec3(x, y, m_FrameIndex, -0.001f, 0.001f);
+		}
+		else
+		{
+			ray.Direction += Walnut::Random::Vec3(-0.001f, 0.001f);
+		}
+		
 	}
 
 	glm::vec3 colour(0.0f);
@@ -175,8 +183,16 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 		multiplier *= 0.5f;
 
 		ray.Origin = payload.WorldPosition + payload.WorldNormal * 0.0001f;
-		ray.Direction = glm::reflect(ray.Direction, 
-			payload.WorldNormal + material.Roughness * Walnut::Random::Vec3(-0.5f, 0.5f));
+		if (!m_Settings.UseCustomRNG)
+		{
+			ray.Direction = glm::reflect(ray.Direction,
+				payload.WorldNormal + material.Roughness * Walnut::Random::Vec3(-0.5f, 0.5f));
+		}
+		else
+		{
+			ray.Direction = glm::reflect(ray.Direction,
+				payload.WorldNormal + material.Roughness * ((glm::noise3(x) * glm::noise3(y) * glm::noise3(m_FrameIndex)) / 2.0f);
+		}
 	}
 
 	return glm::vec4(colour, 1.0f);
